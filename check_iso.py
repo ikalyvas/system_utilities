@@ -1,10 +1,10 @@
-B#!/usr/bin/python
+#!/usr/bin/python
 
 import urllib2
 import sys
 import re
 from time import sleep
-i0;115;0cmport smtplib
+import smtplib
 import ldap
 from getpass import getuser as username
 from email.mime.text import MIMEText
