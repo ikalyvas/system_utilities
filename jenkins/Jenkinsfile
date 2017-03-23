@@ -1,12 +1,24 @@
 #!groovy
-node('python') {
+
+stage('Initial'){
+echo 'Initial stage'
+}
+
     stage('Build') {
+    parallel linux: {
+        node('python') {
         echo 'Building....'
     }
-    stage('Test') {
-        echo 'Building....'
+    },
+    linux2: {
+       node {
+        echo 'Testing....'
     }
-    stage('Deploy') {
+    },
+    
+    linux3: {
+        node {
         echo 'Deploying....'
+    }
     }
 }
