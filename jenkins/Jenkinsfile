@@ -22,9 +22,10 @@ stage('Build') {
  },
     
     linux3: {
-        node {
+        node('pi') {
         echo 'Deploying....'
 	writeFile file:'test',text:'Deployed'
+	unstash 'stash_stuff'
     }
   }
 }
