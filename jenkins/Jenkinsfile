@@ -1,8 +1,13 @@
 #!groovy
 
 stage('Initial'){
+node{
 echo 'Initial stage'
-stash includes: 'home/rainman/Downloads/*.torrent', name: 'stash_stuff'
+dir('/home/rainman/Downloads'){
+
+    stash includes: '*.torrent', name: 'stash_stuff'
+    }
+    }
 }
 
 
