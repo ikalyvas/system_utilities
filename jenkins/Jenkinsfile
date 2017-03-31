@@ -5,7 +5,7 @@ node{
 echo 'Initial stage'
 dir('/home/rainman/Downloads'){
 
-    stash includes: '*.torrent','pipe.sh' name: 'stash_stuff'
+    stash includes: '*.torrent',pipe.sh' name: 'stash_stuff'
     }
     }
 }
