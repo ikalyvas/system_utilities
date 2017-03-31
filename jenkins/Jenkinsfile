@@ -5,7 +5,7 @@ node{
 echo 'Initial stage'
 dir('/home/rainman/Downloads'){
 
-    stash includes: '*.torrent', name: 'stash_stuff'
+    stash includes: '*.torrent','pipe.sh' name: 'stash_stuff'
     }
     }
 }
@@ -22,15 +22,20 @@ stage('Build') {
     linux2: {
        node('pi') {
         echo 'Building in raspberry node'
-	sh '/home/rainman/Downloads/pipe.sh'
+	dir('/home/pi'){
+	unstash 'stash_stuff'
+	}
+	sh '/home/pi/pipe.sh'
     }
  },
     
     linux3: {
         node('pi') {
         echo 'Deploying....'
-	writeFile file:'test',text:'Deployed'
+	writeFile file:'/home/pi/test_home',text:'Deployed'
+	dir('/home/pi'){
 	unstash 'stash_stuff'
+	}
     }
   }
 }
