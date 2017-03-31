@@ -2,23 +2,29 @@
 
 stage('Initial'){
 echo 'Initial stage'
+stash includes: 'home/rainman/Downloads/*.torrent', name: 'stash_stuff'
 }
 
-    stage('Build') {
-    parallel linux: {
+
+stage('Build') {
+   parallel linux: {
         node('python') {
-        echo 'Building....'
+        echo 'Building in python node(aka localhost)'
+	sh '/home/rainman/Downloads/pipe.sh'
+	
     }
-    },
+ },
     linux2: {
-       node {
-        echo 'Testing....'
+       node('pi') {
+        echo 'Building in raspberry node'
+	sh '/home/rainman/Downloads/pipe.sh'
     }
-    },
+ },
     
     linux3: {
         node {
         echo 'Deploying....'
+	writeFile file:'test',text:'Deployed'
     }
-    }
+  }
 }
