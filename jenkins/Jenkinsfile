@@ -34,8 +34,18 @@ stage('Build') {
         echo 'Deploying....'
 	writeFile file:'/home/pi/test_home',text:'Deployed'
 	dir('/home/pi'){
+        echo 'Unstashing'
 	unstash 'stash_stuff'
+        echo 'Sleeping'
+        sleep(60)
 	}
     }
+  }
+,linux4:{
+
+   node('pi'){
+       echo '4th executor process for pi?'
+       writeFile file:'/home/pi/test_4th',text:'4th executor'
+     }
   }
 }
