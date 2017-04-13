@@ -40,8 +40,9 @@ stage('Build') {
         sleep(60)
 	}
     }
-  }
-,linux4:{
+  },
+
+  linux4:{
 
    node('pi'){
        echo '4th executor process for pi?'
