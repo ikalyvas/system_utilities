@@ -47,6 +47,8 @@ stage('Build') {
    node('pi'){
        echo '4th executor process for pi?'
        writeFile file:'/home/pi/test_4th',text:'4th executor'
-     }
+       echo 'i am in ${pwd()}'
+       sh '/home/pi/pipe.sh'  
+   }
   }
 }
