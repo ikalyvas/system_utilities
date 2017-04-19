@@ -3,6 +3,8 @@
 stage('Initial'){
 node{
 echo 'Initial stage'
+ def pipeline = load("/home/rainman/Downloads/groovy-2.5.0-alpha-1/bin/test.groovy")
+ pipeline.test("THIS IS JENKINS")
 dir('/home/rainman/Downloads'){
 
     stash includes: '*.torrent,pipe.sh', name: 'stash_stuff'
@@ -46,8 +48,6 @@ stage('Build') {
 
    node('pi'){
        echo '4th executor process for pi?'
-       def pipeline = load("test.groovy")
-       pipeline.test("THIS IS JENKINS")
        writeFile file:'/home/pi/test_4th',text:'4th executor'
        echo "i am in ${pwd()}"
        sh '/home/pi/pipe.sh'  
