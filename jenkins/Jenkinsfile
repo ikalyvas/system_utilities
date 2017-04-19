@@ -6,7 +6,7 @@ echo 'Initial stage'
  def pipeline = load("/home/rainman/Downloads/groovy-2.5.0-alpha-1/bin/test.groovy")
  pipeline.test("THIS IS JENKINS")
  pipeline.test1("ANOTHER JENKINS")
- sh 'env > env.txt'
+ sh 'env > /home/rainman/Downloads/env.txt'
  echo "${env.JOB_NAME}"
  //println("String is "+pipeline.omikron);
 dir('/home/rainman/Downloads'){
