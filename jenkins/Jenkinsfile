@@ -6,9 +6,9 @@ echo 'Initial stage'
  def pipeline = load("/home/rainman/Downloads/groovy-2.5.0-alpha-1/bin/test.groovy")
  pipeline.test("THIS IS JENKINS")
  pipeline.test1("ANOTHER JENKINS")
- sh 'env > /home/rainman/Downloads/env.txt'
  echo "${env.JOB_NAME}"
- //println("String is "+pipeline.omikron);
+ whoam("John Kalivas")
+
 dir('/home/rainman/Downloads'){
 
     stash includes: '*.torrent,pipe.sh', name: 'stash_stuff'
@@ -57,4 +57,10 @@ stage('Build') {
        sh '/home/pi/pipe.sh'  
    }
   }
+}
+
+def whoam(String s){
+
+println("this is "+s);
+
 }
