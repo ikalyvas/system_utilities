@@ -19,7 +19,7 @@ dir('/home/rainman/Downloads'){
 stage('Checking for errors'){
 node{
   echo 'this is error checking...'
-  dir('/home/rainman/Downloads/ansible')
+  //dir('/home/rainman/Downloads/ansible')
   sh '/home/rainman/Downloads/ansible/test.sh'
  }
 }
