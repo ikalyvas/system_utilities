@@ -19,9 +19,16 @@ dir('/home/rainman/Downloads'){
 stage('Checking for errors'){
 node{
   echo 'this is error checking...'
-  //dir('/home/rainman/Downloads/ansible')
-  sh '/home/rainman/Downloads/ansible/test.sh'
+  dir('/home/rainman/Downloads/ansible'){
+  try{
+  sh 'test.sh'
  }
+ catch(e){
+ echo 'Caught exception here'
+ echo 'COntinue normally however...'
+ }
+}
+}
 }
 stage('Build') {
    parallel linux: {
