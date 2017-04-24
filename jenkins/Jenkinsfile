@@ -13,10 +13,16 @@ dir('/home/rainman/Downloads'){
 
     stash includes: '*.torrent,pipe.sh', name: 'stash_stuff'
     }
-    }
+ }
 }
 
-
+stage('Checking for errors'){
+node{
+  echo 'this is error checking...'
+  dir('/home/rainman/Downloads/ansible')
+  sh 'test.sh'
+ }
+}
 stage('Build') {
    parallel linux: {
         node('python') {
