@@ -15,8 +15,8 @@ echo 'Initial stage'
 
  def res2 = sh(returnStdout:true,script:'/home/rainman/2.sh')
  def testme = (res2 == null) ? 'NULL' : res2
- def res3 = 14
- def elvis = (res3 == null)?:'NOK'
+ def res3 = null
+ def elvis = res3?:'NOK'
 
  echo "testme is ${testme} and elvis is ${elvis}"
  echo "res2 is ${res2}"
