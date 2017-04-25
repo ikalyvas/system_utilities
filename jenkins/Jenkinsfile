@@ -12,7 +12,7 @@ echo 'Initial stage'
  echo "${env.res}"
  echo "${env.JOB_NAME}"
  whoam("John Kalivas")
- def res2 = sh(returnStdout:true,script:'/home/rainman/2.sh')
+ def res2 = echo sh(returnStdout:true,script:'/home/rainman/2.sh')
  echo "res2 is ${res2}"
 dir('/home/rainman/Downloads'){
 
