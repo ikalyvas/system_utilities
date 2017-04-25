@@ -13,6 +13,8 @@ echo 'Initial stage'
  echo "${env.JOB_NAME}"
  whoam("John Kalivas")
  def res2 = echo sh(returnStdout:true,script:'/home/rainman/2.sh')
+ def testme = res2 == null ? 'NULL' : res2
+ echo 'testme is ${testme}'
  echo "res2 is ${res2}"
 dir('/home/rainman/Downloads'){
 
