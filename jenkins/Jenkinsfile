@@ -17,13 +17,11 @@ echo 'Initial stage'
  def testme = (res2 == null) ? 'NULL' : res2
  def res3 = 24
  def elvis = res3?:'NOK'
- withEnv(['MYTOOL_HOME=/home/rainman/HOTTIES/test.sh']{
+ withEnv(['MYTOOL_HOME=/home/rainman/HOTTIES/test.sh']){
    echo " Inside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
 }
 
-
-
- echo "Outside MYTOOL_HOME is ${env.MYTOOL_HOME}"
+echo " Outside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
  echo "current build info is ${currentBuild}"
  echo "testme is ${testme} and elvis is ${elvis}"
  echo "res2 is ${res2}"
