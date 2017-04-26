@@ -21,9 +21,8 @@ echo 'Initial stage'
    echo " Inside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
 }
 
- echo "current build info is ${currentBuild}"
- currentBuild.x = 2
- echo "current build x info is ${currentBuild.x}"
+ echo "current build info is ${currentBuild} ,$currentBuild.result : ${currentBuild.result} ${currentBuild.displayName} ${currentBuild.description}
+
  echo "testme is ${testme} and elvis is ${elvis}"
  echo "res2 is ${res2}"
 dir('/home/rainman/Downloads'){
