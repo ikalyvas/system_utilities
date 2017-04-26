@@ -20,8 +20,10 @@ echo 'Initial stage'
  withEnv(['MYTOOL_HOME=/home/rainman/HOTTIES/test.sh']{
    echo " Inside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
 }
- echo "Outside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
 
+
+
+ echo "Outside MYTOOL_HOME is ${env.MYTOOL_HOME}"
  echo "current build info is ${currentBuild}"
  echo "testme is ${testme} and elvis is ${elvis}"
  echo "res2 is ${res2}"
