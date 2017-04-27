@@ -1,0 +1,95 @@
+#!groovy
+
+stage('Initial'){
+node{
+echo 'Initial stage'
+ def pipeline = load("/home/rainman/Downloads/groovy-2.5.0-alpha-1/bin/test.groovy")
+ pipeline.test("THIS IS JENKINS")
+ pipeline.test1("ANOTHER JENKINS")
+ env.Lucky = '14'
+ echo 'Printing env'
+ def res = echo sh(returnStdout:true,script:'env')
+ echo "${res}"
+ echo "${env.JOB_NAME}"
+ whoam("John Kalivas")
+
+ def res2 = sh(returnStdout:true,script:'/home/rainman/2.sh')
+ def testme = (res2 == null) ? 'NULL' : res2
+ def res3 = 24
+ def elvis = res3?:'NOK'
+ withEnv(['MYTOOL_HOME=/home/rainman/HOTTIES/test.sh']){
+   echo " Inside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
+}
+
+ echo "current build info is ${currentBuild} ,$currentBuild.result : ${currentBuild.result} ${currentBuild.displayName} ${currentBuild.description}"
+
+ echo "testme is ${testme} and elvis is ${elvis}"
+ echo "res2 is ${res2}"
+dir('/home/rainman/Downloads'){
+
+    stash includes: '*.torrent,pipe.sh', name: 'stash_stuff'
+    }
+ }
+}
+
+stage('Checking for errors'){
+node{
+  echo 'this is error checking...'
+  dir('/home/rainman/Downloads/ansible'){
+  try{
+  sh 'test.sh'
+ }
+ catch(e){
+ echo 'Caught exception here'
+ echo 'COntinue normally however...'
+ }
+}
+}
+}
+stage('Build') {
+   parallel linux: {
+        node('python') {
+        echo 'Building in python node(aka localhost)'
+	sh '/home/rainman/Downloads/pipe.sh'
+	
+    }
+ },
+    linux2: {
+       node('pi') {
+        echo 'Building in raspberry node'
+	dir('/home/pi'){
+	unstash 'stash_stuff'
+	}
+	sh '/home/pi/pipe.sh'
+    }
+ },
+    
+    linux3: {
+        node('pi') {
+        echo 'Deploying....'
+	writeFile file:'/home/pi/test_home',text:'Deployed'
+	dir('/home/pi'){
+        echo 'Unstashing'
+	unstash 'stash_stuff'
+        echo 'Sleeping'
+        sleep(60)
+	}
+    }
+  },
+
+  linux4:{
+
+   node('pi'){
+       echo '4th executor process for pi?'
+       writeFile file:'/home/pi/test_4th',text:'4th executor'
+       echo "i am in ${pwd()}"
+       sh '/home/pi/pipe.sh'  
+   }
+  }
+}
+
+def whoam(String s){
+
+println("this is "+s);
+
+}
