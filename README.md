@@ -4,3 +4,4 @@
 #this will promote merge_test branch by 4 commit
 #this will promote merge_test branch by 5 commit
 merging
+merging 2
