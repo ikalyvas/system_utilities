@@ -37,10 +37,10 @@ stage('Checking for errors'){
 node{
   echo 'this is error checking...'
   def path_to_ans = '/home/rainman/Downloads/ansible'
-  dir(path_to_ans){
+  //dir(path_to_ans){
   echo "i am in ${pwd()}"
-  def res = sh(script:'test.sh',returnStatus:true)
-  //echo "test.sh(mutant pipe.sh) returns $res"
+  def res = sh(script:'/home/rainman/Downloads/test.sh',returnStatus:true)
+  echo "test.sh(mutant pipe.sh) returns $res"
 
  //catch(e){
  //    echo 'Caught exception here'
@@ -49,7 +49,7 @@ node{
  // finally {
  //    echo "with returnStatus set to true the pipeline does not blow"
  //    }
-}
+//}
 }
 }
 stage('Build') {
