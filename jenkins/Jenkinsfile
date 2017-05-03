@@ -3,7 +3,7 @@
 stage('Initial'){
 node{
 echo 'Initial stage....'
- def pipeline = load("/home/rainman/Downloads/groovy-2.5.0-alpha-1/bin/test.groovy")
+ def pipeline = load("/usr/local/share/groovy-2.5.0-alpha-1/bin/test.groovy")
  pipeline.test("THIS IS JENKINS")
  pipeline.test1("ANOTHER JENKINS")
  env.Lucky = '14'
