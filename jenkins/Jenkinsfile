@@ -39,7 +39,7 @@ node{
   def path_to_ans = '/home/rainman/Downloads/ansible'
   dir(path_to_ans){
 try{
-  def res = sh(returnStatus:true,script:'test.sh')
+  def res = sh(returnStdout:true,script:'test.sh')
   echo "$res"
   }
  catch(e){
