@@ -39,7 +39,7 @@ node{
   def path_to_ans = '/home/rainman/Downloads/ansible'
   dir(path_to_ans){
   echo "i am in ${pwd()}"
-  //def res = sh(script:'test.sh',returnStatus:true)
+  def res = sh(script:'test.sh',returnStatus:true)
   //echo "test.sh(mutant pipe.sh) returns $res"
 
  //catch(e){
