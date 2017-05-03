@@ -38,9 +38,9 @@ node{
   dir('/home/rainman/Downloads/ansible'){
 try{
   def res = sh(returnStatus:true,script:'test.sh')
+  echo "$res"
   }
  catch(e){
-     echo "res is $res"
      echo 'Caught exception here'
      echo 'COntinue normally however...'
     }
