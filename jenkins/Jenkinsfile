@@ -91,7 +91,7 @@ stage('Build') {
        writeFile file:'/home/pi/test_4th',text:'4th executor'
        echo "i am in ${pwd()}"
        def res = sh(script:'/home/pi/pipe.sh',returnStatus:true)
-         if(!res){
+         if(res == 2){
          echo "Success!!!"
          }
    }
