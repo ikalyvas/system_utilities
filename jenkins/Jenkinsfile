@@ -39,8 +39,8 @@ node{
   def path_to_ans = '/home/rainman/Downloads/ansible'
   dir(path_to_ans){
 try{
-  def res = sh(returnStatus:true,script:'test.sh')
-  echo "$res"
+  def res = sh(script:'test.sh',returnStatus:true)
+  echo "test.sh returns $res"
   }
  catch(e){
      echo 'Caught exception here'
