@@ -67,7 +67,7 @@ stage('Build') {
 	dir('/home/pi'){
 	unstash 'stash_stuff'
 	}
-	sh '/home/pi/pipe.sh'
+	def res = sh(script:'/home/pi/pipe.sh',returnStatus:true)
     }
  },
     
@@ -90,7 +90,10 @@ stage('Build') {
        echo '4th executor process for pi?'
        writeFile file:'/home/pi/test_4th',text:'4th executor'
        echo "i am in ${pwd()}"
-       sh '/home/pi/pipe.sh'  
+       def res = sh(script:'/home/pi/pipe.sh',returnStatus:true)
+         if(!res){
+         echo "Success!!!"
+         }
    }
   }
 }
