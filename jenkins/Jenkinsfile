@@ -38,17 +38,16 @@ node{
   echo 'this is error checking...'
   def path_to_ans = '/home/rainman/Downloads/ansible'
   dir(path_to_ans){
-try{
   def res = sh(script:'/home/rainman/Downloads/pipe.sh',returnStatus:true)
   echo "test.sh(mutant pipe.sh) returns $res"
-  }
- catch(e){
-     echo 'Caught exception here'
-     echo 'COntinue normally however...'
-    }
-  finally {
-     echo "with returnStatus set to true the pipeline does not blow"
-     }
+
+ //catch(e){
+ //    echo 'Caught exception here'
+ //    echo 'COntinue normally however...'
+ //   }
+ // finally {
+ //    echo "with returnStatus set to true the pipeline does not blow"
+ //    }
 }
 }
 }
