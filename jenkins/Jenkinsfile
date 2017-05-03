@@ -39,8 +39,8 @@ node{
   def path_to_ans = '/home/rainman/Downloads/ansible'
   dir(path_to_ans){
 try{
-  def res = sh(script:'test.sh',returnStatus:true)
-  echo "test.sh returns $res"
+  def res = sh(script:'/home/rainman/Downloads/pipe.sh',returnStatus:true)
+  echo "test.sh(mutant pipe.sh) returns $res"
   }
  catch(e){
      echo 'Caught exception here'
@@ -91,8 +91,11 @@ stage('Build') {
        writeFile file:'/home/pi/test_4th',text:'4th executor'
        echo "i am in ${pwd()}"
        def res = sh(script:'/home/pi/pipe.sh',returnStatus:true)
-         if(res == 2){
+         if(!res){
          echo "Success!!!"
+         }
+         else{
+         echo "Faulty error...."
          }
    }
   }
