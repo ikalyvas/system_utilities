@@ -39,8 +39,8 @@ node{
   def path_to_ans = '/home/rainman/Downloads/ansible'
   dir(path_to_ans){
   echo "i am in ${pwd()}"
-  def res = sh(script:'test.sh',returnStatus:true)
-  echo "test.sh(mutant pipe.sh) returns $res"
+  //def res = sh(script:'test.sh',returnStatus:true)
+  //echo "test.sh(mutant pipe.sh) returns $res"
 
  //catch(e){
  //    echo 'Caught exception here'
@@ -56,9 +56,10 @@ stage('Build') {
    parallel linux: {
         node('python') {
         echo 'Building in python node(aka localhost)'
+        dir(WORKSPACE){
 	def res =sh(script:'/home/rainman/Downloads/pipe.sh',returnStatus:true)
 	echo "pipe returns $res"
-	
+	}
     }
  },
     linux2: {
