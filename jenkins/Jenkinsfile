@@ -36,17 +36,17 @@ stage('Checking for errors'){
 node{
   echo 'this is error checking...'
   dir('/home/rainman/Downloads/ansible'){
-  try{
-  def res = sh(returnStatus:true,script:'test.sh')
- }
- catch(e){
-     echo 'Caught exception here'
-     echo 'COntinue normally however...'
-    }
-  finally {
 
-      echo "with returnStatus set to true the pipeline does not blow"
-      }
+  def res = sh(returnStatus:true,script:'test.sh')
+  echo "res is $res"
+// catch(e){
+//     echo 'Caught exception here'
+//     echo 'COntinue normally however...'
+//    }
+//  finally {
+
+ //     echo "with returnStatus set to true the pipeline does not blow"
+ //     }
 }
 }
 }
