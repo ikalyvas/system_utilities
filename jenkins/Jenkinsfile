@@ -39,7 +39,7 @@ node{
   def path_to_ans = '/home/rainman/Downloads/ansible'
   dir(path_to_ans){
 try{
-  def res = sh(returnStdout:true,script:'test.sh')
+  def res = sh(returnStatus:true,script:'test.sh')
   echo "$res"
   }
  catch(e){
@@ -56,7 +56,8 @@ stage('Build') {
    parallel linux: {
         node('python') {
         echo 'Building in python node(aka localhost)'
-	sh '/home/rainman/Downloads/pipe.sh'
+	def res =sh(script:'/home/rainman/Downloads/pipe.sh',returnStatus:true)
+	echo "pipe returns $res"
 	
     }
  },
