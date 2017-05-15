@@ -135,8 +135,9 @@ stage('Build') {
          echo "Success!!!"
          }
          else{
-         echo "Faulty error...."
-             error "Error now"
+         echo "Faulty error....But lets mark the build unstable"
+             //error "Error now"
+             currentBuild.result = "UNSTABLE"
 
          }
    }
