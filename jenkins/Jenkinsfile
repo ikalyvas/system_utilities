@@ -1,95 +1,204 @@
 #!groovy
 
-stage('Initial'){
-node{
-echo 'Initial stage in Jenkins'
- def pipeline = load("/home/rainman/Downloads/groovy-2.5.0-alpha-1/bin/test.groovy")
- pipeline.test("THIS IS JENKINS")
- pipeline.test1("ANOTHER JENKINS")
- env.Lucky = '14'
- echo 'Printing env'
- def res = echo sh(returnStdout:true,script:'env')
- echo "${res}"
- echo "${env.JOB_NAME}"
- whoam("John Kalivas")
+import java.util.ArrayList
+import java.util.Date
+import java.io.File
 
- def res2 = sh(returnStdout:true,script:'/home/rainman/2.sh')
- def testme = (res2 == null) ? 'NULL' : res2
- def res3 = 24
- def elvis = res3?:'NOK'
- withEnv(['MYTOOL_HOME=/home/rainman/HOTTIES/test.sh']){
-   echo " Inside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
-}
 
- echo "current build info is ${currentBuild} ,$currentBuild.result : ${currentBuild.result} ${currentBuild.displayName} ${currentBuild.description}"
+stashes = new ArrayList()
 
- echo "testme is ${testme} and elvis is ${elvis}"
- echo "res2 is ${res2}"
-dir('/home/rainman/Downloads'){
 
-    stash includes: '**/*.torrent,pipe.sh', name: 'stash_stuff'
+
+stage(name:'Merge and checkout testing')
+        node{
+            echo "Mergin bfore checkout"
+
+
+            checkout(changelog: true,
+                    poll: true,
+                    scm:
+                            [$class: 'GitSCM',
+                             branches: [[name: '*/master']],
+                             doGenerateSubmoduleConfigurations: false,
+                             extensions: [
+                                     [$class: 'PreBuildMerge',
+                                      options:
+                                              [fastForwardMode: 'FF',
+                                               mergeRemote: 'https://github.com/ikalyvas/system_utilities/tree/hooowoo',
+                                               mergeStrategy: "default",
+                                               mergeTarget: 'master']
+                                     ]
+                             ],
+                             submoduleCfg: [],
+                             userRemoteConfigs:
+                                     [[url: 'https://github.com/ikalyvas/system_utilities']]]
+            )
+
+        }
+stage(name: 'Debugging phase') {
+    node{
+        echo "Debugging"
+        def date = new Date()
+        echo "Date is ${date}"
+        writeFile(text:'dummy',file:'file.io')
+        def res = readFile(file: 'tests.xml')
+        writeFile(file: 'giannis.xml',text: res)
+        archiveArtifacts(allowEmptyArchive: true,artifacts: "**/*.xml,**/*.io",fingerprint: true)
+      //junit(testResults:'giannis.xml')
+
     }
- }
-}
 
+
+
+
+        }
+stage('Initial') {
+
+    if (env.JOB_NAME == 'test_pipeline_on_labels_2') {
+        node {
+            echo 'Initial stage....'
+
+            // map['y'] = 3
+            //map.z = 4
+            // test_map(map)
+            // go_crazy(map)
+            def pipeline = load("/usr/local/share/groovy-2.5.0-alpha-1/bin/test.groovy")
+            pipeline.test("THIS IS JENKINS")
+            pipeline.test1("ANOTHER JENKINS")
+            env.Lucky = '14'
+            echo 'Printing env'
+            def res = sh(returnStdout: true, script: 'env')
+            echo "${res}"
+            echo "${env.JOB_NAME}"
+            whoam("John Kalivas")
+
+// def res2 = sh(returnStdout:true,script:'/home/rainman/2.sh')
+            def res2 = null
+
+            def testme = (res2 == null) ? 'NULL' : res2
+            def res3 = 24
+            def elvis = res3 ?: 'NOK'
+            withEnv(['MYTOOL_HOME=/home/rainman/HOTTIES/test.sh']) {
+                echo " Inside MYTOOL_HOME is ${env.MYTOOL_HOME} and ${MYTOOL_HOME}"
+            }
+
+            echo "current build info is ${currentBuild} " +
+                    "${currentBuild.result} " +
+                    "${currentBuild.displayName} " +
+                    "${currentBuild.description}"
+
+            echo "testme is ${testme} and elvis is ${elvis}"
+            echo "res2 is ${res2}"
+            //def x = []
+            //def result = x?.push
+            //echo "result is $result"
+            dir('/home/rainman/Downloads') {
+
+                stash includes: '*.torrent,pipe.sh', name: 'stash_stuff'
+                stashes.add('stash_stuff')
+            }
+        }
+    }
+    else {
+        echo "Skippin Initial stage"
+    }
+}
 stage('Checking for errors'){
 node{
   echo 'this is error checking...'
-  dir('/home/rainman/Downloads/ansible'){
-  try{
-  sh 'test.sh'
- }
- catch(e){
- echo 'Caught exception here'
- echo 'COntinue normally however...'
- }
-}
+  def path_to_ans = '/home/rainman/Downloads/ansible'
+  //dir(path_to_ans){
+  echo "i am in ${pwd()}"
+  def res = sh(script:'/home/rainman/Downloads/ansible/test.sh',returnStatus:true)
+  echo "test.sh(mutant pipe.sh) returns $res"
+
+ //catch(e){
+ //    echo 'Caught exception here'
+ //    echo 'COntinue normally however...'
+ //   }
+ // finally {
+ //    echo "with returnStatus set to true the pipeline does not blow"
+ //    }
+//}
 }
 }
 stage('Build') {
    parallel linux: {
         node('python') {
         echo 'Building in python node(aka localhost)'
-	sh '/home/rainman/Downloads/pipe.sh'
-	
+        dir(WORKSPACE){
+	def res =sh(script:'/home/rainman/Downloads/pipe.sh',returnStatus:true)
+	echo "pipe returns $res"
+    currentBuild.result = 'UNSTABLE'
+	}
     }
  },
     linux2: {
        node('pi') {
         echo 'Building in raspberry node'
 	dir('/home/pi'){
-	unstash 'stash_stuff'
+        for(stash in stashes) {
+
+            echo "Unstashing now..."
+            unstash "${stash}"
+        }
 	}
-	sh '/home/pi/pipe.sh'
+	echo "On pi running the first pipe"
+	def res = sh(script:'/home/pi/pipe.sh',returnStatus:true)
+	echo "pipe on linux2 returns $res"
+    archiveArtifacts(allowEmptyArchive: true, artifacts: '*.xml', fingerprint: true)
+
     }
  },
-    
-    linux3: {
-        node('pi') {
-        echo 'Deploying....'
-	writeFile file:'/home/pi/test_home',text:'Deployed'
-	dir('/home/pi'){
-        echo 'Unstashing'
-	unstash 'stash_stuff'
-        echo 'Sleeping'
-        sleep(60)
-	}
-    }
-  },
 
   linux4:{
 
    node('pi'){
        echo '4th executor process for pi?'
        writeFile file:'/home/pi/test_4th',text:'4th executor'
-       echo "i am in ${pwd()}"
-       sh '/home/pi/pipe.sh'  
+       echo "On pi running the second pipe"
+       def res = sh(script:'/home/pi/pipe.sh',returnStatus:true)
+       echo "pipe on linux4 returns $res"
+         if(!res){
+         echo "Success!!!"
+         }
+         else{
+         echo "Faulty error....But lets mark the build unstable"
+             //error "Error now"
+             currentBuild.result = "UNSTABLE"
+
+         }
    }
   }
+
 }
 
+//currentBuild.result = 'SUCCESS'
 def whoam(String s){
 
 println("this is "+s);
+
+}
+
+//@NonCPS
+def test_map(dict){
+
+    for(i in dict){
+
+        //sh(script: "$i.key $i.value")
+        echo "here:$i.key:$i.value"
+    }
+
+}
+
+@NonCPS
+def go_crazy(dict){
+
+    dict.each{k,v -> println("f-----> $k:$v")}
+}
+
+
+@NonCPS
+def mergin(){
 
 }
