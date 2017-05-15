@@ -7,6 +7,34 @@ import java.io.File
 
 stashes = new ArrayList()
 
+
+
+stage(name:'Merge and checkout testing')
+        node{
+            echo "Mergin bfore checkout"
+
+
+            checkout(changelog: true,
+                    poll: true,
+                    scm:
+                            [$class: 'GitSCM',
+                             branches: [[name: '*/master']],
+                             doGenerateSubmoduleConfigurations: false,
+                             extensions: [
+                                     [$class: 'PreBuildMerge',
+                                      options:
+                                              [fastForwardMode: 'FF',
+                                               mergeRemote: 'https://github.com/ikalyvas/system_utilities/tree/hooowoo',
+                                               mergeStrategy: "default",
+                                               mergeTarget: 'master']
+                                     ]
+                             ],
+                             submoduleCfg: [],
+                             userRemoteConfigs:
+                                     [[url: 'https://github.com/ikalyvas/system_utilities']]]
+            )
+
+        }
 stage(name: 'Debugging phase') {
     node{
         echo "Debugging"
@@ -168,3 +196,4 @@ def go_crazy(dict){
 
     dict.each{k,v -> println("f-----> $k:$v")}
 }
+
