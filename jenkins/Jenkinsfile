@@ -9,32 +9,35 @@ stashes = new ArrayList()
 
 
 
-stage(name:'Merge and checkout testing')
-        node{
-            echo "Mergin bfore checkout"
+stage(name:'Merge and checkout testing') {
+    node('localhost') {
+        echo "Mergin bfore checkout"
 
+        dir("$WORKSPACE") {
+
+            sh("rm -rf checkout_code && mkdir checkout_code")
 
             checkout(changelog: true,
                     poll: true,
-                    scm:
-                            [$class: 'GitSCM',
-                             branches: [[name: '*/master']],
-                             doGenerateSubmoduleConfigurations: false,
-                             extensions: [
-                                     [$class: 'PreBuildMerge',
-                                      options:
-                                              [fastForwardMode: 'FF',
-                                               mergeRemote: 'https://github.com/ikalyvas/system_utilities/tree/hooowoo',
-                                               mergeStrategy: "default",
-                                               mergeTarget: 'master']
-                                     ]
-                             ],
-                             submoduleCfg: [],
-                             userRemoteConfigs:
-                                     [[url: 'https://github.com/ikalyvas/system_utilities']]]
+                    scm: [
+                            $class: 'GitSCM',
+                            branches: [[name: 'refs/remotes/origin/hooowoo']],
+                            doGenerateSubmoduleConfigurations: false,
+                            extensions: [[$class: 'PreBuildMerge',
+                                          options: [
+                                                  fastForwardMode: 'FF',
+                                                  mergeRemote: 'origin',
+                                                  mergeStrategy: 'default',
+                                                  mergeTarget: 'master']
+                                         ]
+                            ],
+                            submoduleCfg: [],
+                            userRemoteConfigs: [[url: 'https://github.com/ikalyvas/system_utilities']]]
             )
 
         }
+    }
+}
 stage(name: 'Debugging phase') {
     node{
         echo "Debugging"
