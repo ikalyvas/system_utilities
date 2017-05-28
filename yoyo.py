@@ -120,3 +120,4 @@ class Crawler:
 crawler = Crawler('http://www.yoyowallet.com/',20)
 crawler.crawl()
 
+
