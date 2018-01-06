@@ -4,10 +4,11 @@ import operator
 from collections import defaultdict
 
 
-class VlanId(object):
+class Vlan(object):
 
-    def __init__(self, vlanId):
+    def __init__(self, vlanId, deviceId):
         self.vlanId = vlanId
+        self.deviceId = deviceId
         self._is_reserved = False
 
     def reserve_id(self):
@@ -23,28 +24,28 @@ class VlanId(object):
 
 class VlanAssigner(object):
 
-    PRIMARY_PORT = 1
-    SECONDARY_PORT = 0
+    PRIMARY_PORT = "1"
+    SECONDARY_PORT = "0"
     PRIMARY_FREE = "primary_free"
     PRIMARY_RESERVED = "primary_reserved"
     SECONDARY_FREE = "secondary_free"
     SECONDARY_RESERVED = "secondary_reserved"
 
-    def __init__(self, vlans, requests):
+    def __init__(self, vlans):
         self.vlans_file = open(vlans, 'rb')
-        self.requests_file = open(requests, 'rb')
         self.output_file = open('output.csv','w')
+        self.output_file.write('request_id,device_id,primary_port,vlan_id'+'\n')
         self.deviceId_to_port_vlans = defaultdict(lambda: defaultdict(lambda: []))
         self.create_hashmap(self.vlans_file)
         self.sort_vlan_pools()
 
     def create_hashmap(self, vlan_file):
+
         vlanReader = csv.reader(vlan_file, delimiter=',')
         _ = next(vlanReader)
         for line in vlanReader:
             device_id, primary_port, vlan_id = line
-            vlan_obj = VlanId(int(vlan_id))
-            device_id = int(device_id)
+            vlan_obj = Vlan(vlan_id,device_id)
             primary_port = int(primary_port)
 
             if primary_port:
@@ -57,7 +58,6 @@ class VlanAssigner(object):
         for device_id in self.deviceId_to_port_vlans.keys():
             self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE].sort(key=operator.attrgetter('vlanId'))
             self.deviceId_to_port_vlans[device_id][self.PRIMARY_RESERVED].sort(key=operator.attrgetter('vlanId'))
-
             self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE].sort(key=operator.attrgetter('vlanId'))
             self.deviceId_to_port_vlans[device_id][self.SECONDARY_RESERVED].sort(key=operator.attrgetter('vlanId'))
 
@@ -68,28 +68,41 @@ class VlanAssigner(object):
         if is_redundant_request:
             for device_id in device_ids:
                 for vlan_obj in self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE]:
-                    if any(vlan_obj.vlanId == sec_vlan_obj.vlanId for sec_vlan_obj in
-                           self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE]):
-                        self.output_file.write(', '.join([req_id, device_id, self.PRIMARY_PORT, vlan_obj.vlanId]))
-                        self.output_file.write(', '.join([req_id, device_id, self.SECONDARY_PORT, vlan_obj.vlanId]))
-                        return
+                    free_pair = [(vlan_obj,sec_vlan_obj) for sec_vlan_obj in self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE]
+                                  if vlan_obj.vlanId == sec_vlan_obj.vlanId]
+                    if free_pair:
+
+                            self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE].remove(vlan_obj)
+                            self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE].remove(sec_vlan_obj)
+                            self.deviceId_to_port_vlans[device_id][self.PRIMARY_RESERVED].append(vlan_obj)
+                            self.deviceId_to_port_vlans[device_id][self.SECONDARY_RESERVED].append(sec_vlan_obj)
+                            self.output_file.write(', '.join([req_id, device_id, self.PRIMARY_PORT, vlan_obj.vlanId])+'\n')
+                            self.output_file.write(', '.join([req_id, device_id, self.SECONDARY_PORT, sec_vlan_obj.vlanId])+'\n')
+                            return
+
             else:
                 raise Exception("Does not have pair primary/secondary ports for the redundant request")
 
 
         else:
+
+            lowest_vlans_per_device = []
             for device_id in device_ids:
-                if self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE]:
-                    vlan_obj = self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE].pop(0)
-                    self.deviceId_to_port_vlans[device_id][self.PRIMARY_RESERVED].append(vlan_obj)
-                    self.output_file.write(', '.join([req_id, device_id, self.PRIMARY_PORT, vlan_obj.vlanId]))
-                    break
-            else:
-                raise Exception("Does not have a vlan id on a primary port on any device for the non-redundant request")
+                lowest_vlans_per_device.append(self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE][0])
+            lowest_vlans_per_device.sort(key=operator.attrgetter('vlanId','deviceId'))
+            vlan_obj = lowest_vlans_per_device[0]
+            self.deviceId_to_port_vlans[vlan_obj.deviceId][self.PRIMARY_FREE].remove(vlan_obj)
+            self.deviceId_to_port_vlans[vlan_obj.deviceId][self.PRIMARY_RESERVED].append(vlan_obj)
+            self.output_file.write(', '.join([req_id, vlan_obj.deviceId, self.PRIMARY_PORT, vlan_obj.vlanId])+'\n')
 
 
 if __name__ == '__main__':
     vlans = sys.argv[1]
     requests = sys.argv[2]
-    assigner = VlanAssigner(vlans, requests)
-    print assigner.deviceId_to_port_vlans['3']["secondary"]
+    assigner = VlanAssigner(vlans)
+
+    requests_reader = csv.reader(open(requests,'rb'))
+    requests_header = next(requests_reader)
+    for line in requests_reader:
+        req_id , is_redundant = line
+        assigner.find_available_port(req_id,int(is_redundant))
