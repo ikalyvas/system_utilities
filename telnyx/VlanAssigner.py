@@ -17,30 +17,36 @@ class VlanAssigner(object):
 
     def __init__(self, vlans):
 
-        logging.basicConfig(format=self.FORMAT)
+        logging.basicConfig(level=logging.DEBUG,
+                            format=self.FORMAT,
+                            filename=self.__class__.__name__+'.log',
+                            filemode='a'
+                            )
         self.logger = logging.getLogger('vlanAssigner')
         self.deviceId_to_port_vlans = defaultdict(lambda: defaultdict(lambda: []))
-
-        try:
-            self.vlans_file = open(vlans, 'rb')
-            self.output_file = open('output.csv', 'w')
-            self.output_file.write('request_id,device_id,primary_port,vlan_id'+'\n')
-        except IOError as e:
-            self.logger.exception('Could not open files for reading/writing')
-            raise
-        else:
-            self.create_hashmap(self.vlans_file)
-            self.sort_vlan_pools()
+        self.vlans_file = None
+        self.output_file = None
+        self._create_files(vlans)
+        self._create_hashmap(self.vlans_file)
+        self._sort_vlan_pools()
 
     def __del__(self):
 
         self.vlans_file.close()
         self.output_file.close()
-        del self.vlans_file
-        del self.output_file
 
-    def create_hashmap(self, vlan_file):
+    def _create_files(self, vlans):
+        try:
+            self.vlans_file = open(vlans, 'rb')
+            self.output_file = open('output.csv', 'w')
+            self.output_file.write('request_id,device_id,primary_port,vlan_id'+'\n')
+        except IOError as e:
+            self.logger.exception('Could not create the files for input/output')
+            raise
 
+    def _create_hashmap(self, vlan_file):
+
+        self.logger.info('Constructing the hashmap to hold the vlans')
         vlanReader = csv.reader(vlan_file, delimiter=',')
         _ = next(vlanReader)
         for line in vlanReader:
@@ -53,7 +59,7 @@ class VlanAssigner(object):
             else:
                 self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE].append(vlan_id)
 
-    def sort_vlan_pools(self):
+    def _sort_vlan_pools(self):
 
         for device_id in self.deviceId_to_port_vlans.keys():
             self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE].sort()
@@ -108,7 +114,7 @@ if __name__ == '__main__':
     requests_reader = csv.reader(open(requests, 'rb'))
     requests_header = next(requests_reader)
     for line in requests_reader:
-        req_id , is_redundant = line
+        req_id, is_redundant = line
         assigner.find_available_port(req_id, int(is_redundant))
 
     end = time.time()
