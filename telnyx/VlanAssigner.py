@@ -1,28 +1,12 @@
 import sys
 import csv
-import operator
 from collections import defaultdict
-
-
-class Vlan(object):
-
-    def __init__(self, vlanId, deviceId):
-        self.vlanId = vlanId
-        self.deviceId = deviceId
-        self._is_reserved = False
-
-    def reserve_id(self):
-        self._is_reserved = True
-
-    def release_id(self):
-        self._is_reserved = False
-
-    @property
-    def is_reserved(self):
-        return self._is_reserved
+import logging
 
 
 class VlanAssigner(object):
+
+    FORMAT = '%(asctime)-15s %(levelname)s %(message)s'
 
     PRIMARY_PORT = "1"
     SECONDARY_PORT = "0"
@@ -32,12 +16,28 @@ class VlanAssigner(object):
     SECONDARY_RESERVED = "secondary_reserved"
 
     def __init__(self, vlans):
-        self.vlans_file = open(vlans, 'rb')
-        self.output_file = open('output.csv','w')
-        self.output_file.write('request_id,device_id,primary_port,vlan_id'+'\n')
+
+        logging.basicConfig(format=self.FORMAT)
+        self.logger = logging.getLogger('vlanAssigner')
         self.deviceId_to_port_vlans = defaultdict(lambda: defaultdict(lambda: []))
-        self.create_hashmap(self.vlans_file)
-        self.sort_vlan_pools()
+
+        try:
+            self.vlans_file = open(vlans, 'rb')
+            self.output_file = open('output.csv', 'w')
+            self.output_file.write('request_id,device_id,primary_port,vlan_id'+'\n')
+        except IOError as e:
+            self.logger.exception('Could not open files for reading/writing')
+            raise
+        else:
+            self.create_hashmap(self.vlans_file)
+            self.sort_vlan_pools()
+
+    def __del__(self):
+
+        self.vlans_file.close()
+        self.output_file.close()
+        del self.vlans_file
+        del self.output_file
 
     def create_hashmap(self, vlan_file):
 
@@ -71,15 +71,18 @@ class VlanAssigner(object):
                               set(self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE])
                     if common_set:
                         free_pairs.append((device_id, min(common_set)))
+            if free_pairs:
+                free_pairs.sort(key=lambda x: (x[1], x[0]))
+                device_id, vlan_id = free_pairs[0]
+                self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE].remove(vlan_id)
+                self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE].remove(vlan_id)
+                self.deviceId_to_port_vlans[device_id][self.PRIMARY_RESERVED].append(vlan_id)
+                self.deviceId_to_port_vlans[device_id][self.SECONDARY_RESERVED].append(vlan_id)
+                self.output_file.write(','.join([req_id, device_id, self.SECONDARY_PORT, str(vlan_id)])+'\n')
+                self.output_file.write(','.join([req_id, device_id, self.PRIMARY_PORT, str(vlan_id)])+'\n')
 
-            free_pairs.sort(key=lambda x: (x[1], x[0]))
-            device_id, vlan_id = free_pairs[0]
-            self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE].remove(vlan_id)
-            self.deviceId_to_port_vlans[device_id][self.SECONDARY_FREE].remove(vlan_id)
-            self.deviceId_to_port_vlans[device_id][self.PRIMARY_RESERVED].append(vlan_id)
-            self.deviceId_to_port_vlans[device_id][self.SECONDARY_RESERVED].append(vlan_id)
-            self.output_file.write(','.join([req_id, device_id, self.SECONDARY_PORT, str(vlan_id)])+'\n')
-            self.output_file.write(','.join([req_id, device_id, self.PRIMARY_PORT, str(vlan_id)])+'\n')
+            else:
+                raise Exception('There is no pair of primary/secondary free port available.')
 
         else:
 
@@ -88,8 +91,8 @@ class VlanAssigner(object):
                 lowest_vlans_per_device.append((device_id,
                                                 self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE][0])
                                                )
-            lowest_vlans_per_device.sort(key=lambda x:(x[1], x[0]))
-            device_id,vlan_id = lowest_vlans_per_device[0]
+            lowest_vlans_per_device.sort(key=lambda x: (x[1], x[0]))
+            device_id, vlan_id = lowest_vlans_per_device[0]
             self.deviceId_to_port_vlans[device_id][self.PRIMARY_FREE].remove(vlan_id)
             self.deviceId_to_port_vlans[device_id][self.PRIMARY_RESERVED].append(vlan_id)
             self.output_file.write(','.join([req_id, device_id, self.PRIMARY_PORT, str(vlan_id)])+'\n')
@@ -102,10 +105,11 @@ if __name__ == '__main__':
     requests = sys.argv[2]
     assigner = VlanAssigner(vlans)
 
-    requests_reader = csv.reader(open(requests,'rb'))
+    requests_reader = csv.reader(open(requests, 'rb'))
     requests_header = next(requests_reader)
     for line in requests_reader:
         req_id , is_redundant = line
-        assigner.find_available_port(req_id,int(is_redundant))
+        assigner.find_available_port(req_id, int(is_redundant))
+
     end = time.time()
-    print 'Execution took %d' % (end-start)
+    print 'Execution took %d' % (end - start)
