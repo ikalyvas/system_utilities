@@ -43,7 +43,7 @@ SecretStorage==2.3.1
 simplejson==3.13.2
 six==1.11.0
 subprocess32==3.2.7
-urllib3==1.22
+urllib3==1.24.2
 usercustomize==1.0.0
 Werkzeug==0.15.3
 wincertstore==0.2
