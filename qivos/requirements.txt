@@ -10,7 +10,7 @@ Cython==0.27.3
 docopt==0.6.2
 ed25519ll==0.6
 enum34==1.1.6
-Flask==0.12.2
+Flask==1.0
 funcsigs==1.0.2
 idna==2.6
 ipaddr==2.2.0
