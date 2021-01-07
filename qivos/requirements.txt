@@ -18,7 +18,7 @@ ipaddress==1.0.19
 itsdangerous==0.24
 Jinja2==2.10
 keyring==10.6.0
-lxml==3.3.3
+lxml==4.6.2
 MarkupSafe==1.0
 matplotlib==2.1.2
 mock==2.0.0
